@@ -5,6 +5,10 @@ T = TypeVar("T")
 Node = Tuple[int, T, T]
 
 
+def create_node(index, value, next) -> Node:
+    return [index, value, next]
+
+
 class SparseArray:
     letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
                'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
@@ -16,15 +20,13 @@ class SparseArray:
         self.height = height
         self.sparse_array = None
 
-        self.fillRandomly(num_items)
+        self.fill_randomly(num_items)
 
     def fill_randomly(self, num):
         for i in range(num):
             self.add(random.randint(self.width),
                      random.randint(self.height),
                      self.letters[random.randint(len(self.letters))])
-
-
 
     def add(self, x: int, y: int, value: T) -> bool:
         """
@@ -41,38 +43,85 @@ class SparseArray:
             if p[0] == y:
                 b = p
                 p = p[1]
+                b_within = False
                 while p is not None:
                     if p[0] == x:
                         p[1] = value
                         return False
-                    elif p[0] > y:
-                        p = Node(x, value, p)
-                        b[2] = p
+                    elif p[0] > x:
+                        p = create_node(x, value, p)
+                        if b_within:
+                            b[2] = p
+                        else:
+                            b[1] = p
                         return True
                     else:
                         b = p
                         p = p[2]
-                b[1] = Node(x, value, None)
+                        b_within = True
+                p = create_node(x, value, None)
+                if b_within:
+                    b[2] = p
+                else:
+                    b[1] = p
                 return True
             elif p[0] > y:
-                p = Node(y, None, p)
-                b[2] = p
+                if b is p:
+                    p = create_node(y, None, p)
+                    self.sparse_array = p
+                    b = p
+                else:
+                    p = create_node(y, None, p)
+                    b[2] = p
             else:
                 b = p
                 p = p[2]
-        p = Node(y, Node(x, value, None), None)
-        b[2] = p
+        p = create_node(y, create_node(x, value, None), None)
+        if b is None:
+            self.sparse_array = p
+        else:
+            b[2] = p
         return True
 
     def __str__(self):
+        print("gathering __str__")
+        output = ""
         b = self.sparse_array
         p = b
         while p is not None:
-            print(f"{p[0]}:", end="\t")
-            q = b[1]
+            output += f"{p[0]}:\t"
+            q = p[1]
             while q is not None:
-                print(f"({q[0]}, {q[1]})", end="\t")
+                output += f"({q[0]}, {q[1]})\t"
+                q = q[2]
+            output += "\n"
             b = p
             p = b[2]
+        return output
+
+    def tree(self) -> str:
+        return self.__str__()
+
+    def grid(self) -> str:
+        output = ""
+        p = self.sparse_array
+        if p is None:
+            return "Sparse Array is None"
+        for y in range(self.height):
+            if y == p[0]:
+                q = p[1]
+                for x in range(self.width):
+                    if x == q[0]:
+                        output += q[1]
+                        q = q[2]
+                        if q is None:
+                            break
+                    output += "\t"
+                p = p[2]
+                if p is None:
+                    break
+            output += "\n"
+        return output
+
 
 
