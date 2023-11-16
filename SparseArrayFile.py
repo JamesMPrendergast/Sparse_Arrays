@@ -83,6 +83,58 @@ class SparseArray:
             b[2] = p
         return True
 
+    def __getitem__(self, x):
+        i = 0
+        p = self.sparse_array
+        while p is not None:
+            q = p[1]
+            while q is not None:
+                if i == x:
+                    return q[1]
+                i += 1
+                q = q[2]
+            p = p[2]
+        return None
+
+    def get_value_at_coordinates(self, x, y):
+        p = self.sparse_array
+        while p is not None:
+            if p[0] == y:
+                q = p[1]
+                while q is not None:
+                    if q[0] == x:
+                        return q[1]
+                    elif q[0] > x:
+                        return None
+                    q = q[2]
+            elif p[0] > y:
+                return None
+            p = p[2]
+        return None
+
+    def find_coordinates_of_value(self, value: str):
+        p = self.sparse_array
+        while p is not None:
+            q = p[1]
+            while q is not None:
+                if q[1] == value:
+                    return [q[0], p[0]]
+                q = q[2]
+            p = p[2]
+        return None
+
+    def find_index_of_value(self, value: str):
+        i = 0
+        p = self.sparse_array
+        while p is not None:
+            q = p[1]
+            while q is not None:
+                if q[1] == value:
+                    return i
+                i += 1
+                q = q[2]
+            p = p[2]
+
     def __str__(self):
         print("gathering __str__")
         output = ""
@@ -103,11 +155,15 @@ class SparseArray:
         return self.__str__()
 
     def grid(self) -> str:
-        output = ""
         p = self.sparse_array
         if p is None:
             return "Sparse Array is None"
+        output = "\t"
+        for x in range(self.width):
+            output += f"{x}\t"
+        output += "\n"
         for y in range(self.height):
+            output += f"{y}\t"
             if y == p[0]:
                 q = p[1]
                 for x in range(self.width):
@@ -122,6 +178,3 @@ class SparseArray:
                     break
             output += "\n"
         return output
-
-
-
